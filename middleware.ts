@@ -65,12 +65,12 @@ export default auth((req) => {
   const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
 
-  // 1. Allow API auth routes (NextAuth internal)
+  // Allow NextAuth API routes to proceed
   if (isApiAuthRoute) {
     return NextResponse.next();
   }
 
-  // 2. If the user is already logged in → redirect away from sign-in / sign-up pages
+  // If on auth pages (sign-in, sign-up) redirect logged-in users away
   if (isAuthRoute) {
     if (isLoggedIn) {
       return NextResponse.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
@@ -78,23 +78,20 @@ export default auth((req) => {
     return NextResponse.next();
   }
 
-  // 3. If it's a public route → allow access
+  // Public routes allowed
   if (isPublicRoute) {
     return NextResponse.next();
   }
 
-  // 4. Protected routes → require login
+  // Protected routes require login
   if (!isLoggedIn) {
     return NextResponse.redirect(new URL("/auth/sign-in", nextUrl));
   }
 
-  // 5. Otherwise → allow
+  // Default: allow
   return NextResponse.next();
 });
 
-// Tell Next.js which routes this middleware should run on
 export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico).*)",
-  ],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
